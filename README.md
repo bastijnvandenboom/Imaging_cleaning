@@ -20,6 +20,5 @@ Workflow: change settings, load data, start gui, work on delete or merge panel, 
 
 Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore
 
-![screenshot_GUI](https://github.com/user-attachments/assets/b52b2ddd-55c0-461d-a6ba-9002806d2d58)
-
+![screenshot_GUI](https://github.com/user-attachments/assets/cfc76e9c-7b3a-46e5-832e-26a32d7470ca)
 
