@@ -3,7 +3,7 @@ GUI to clean calcium imaging data of 1 and 2 photon data.
 
 It loads CNMF (Caiman) .mat or .hdf5 files and allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
-Clone/download the code, add to your Matlab path, run GUI_caiman_cleaning.
+Clone/download the code, add to your Matlab path, run GUI_cnmf_cleaning.
 
 Settings: allows to apply thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, SNR minimum value) and thresholds to identify potential merge pairs (distance threshold, correlation threshold)
 ROIs that do not fullfil spatial and SNR will be moved to the delete list
