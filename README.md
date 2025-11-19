@@ -1,5 +1,5 @@
 # Imaging_cleaning
-GUI to clean calcium imaging data of 1 and 2 photon data.
+GUI to clean CNMF (Caiman) calcium imaging data of 1 and 2 photon data.
 
 It loads CNMF (Caiman) .mat or .hdf5 files and allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
