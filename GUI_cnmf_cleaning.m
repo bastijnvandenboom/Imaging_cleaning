@@ -2291,8 +2291,8 @@ C = h5read([filepath1 filename1], [data_nm '/C'])';
 S = h5read([filepath1 filename1], [data_nm '/S'])';
 spat_bgnd_comp = h5read([filepath1 filename1], [data_nm '/b']);
 temp_bgnd_comp = h5read([filepath1 filename1], [data_nm '/f']);
-rois_good = h5read([filepath1 filename1], [data_nm '/idx_components']) +1; % MATLAB is 1-based
-rois_bad = h5read([filepath1 filename1], [data_nm '/idx_components_bad']) +1; % MATLAB is 1-based
+rois_good = h5read([filepath1 filename1], [data_nm '/idx_components']) +1 % MATLAB is 1-based
+rois_bad = h5read([filepath1 filename1], [data_nm '/idx_components_bad']) +1 % MATLAB is 1-based
 rois_bad = rois_bad'; %
 try % not everyone has these vars
     residuals = h5read([filepath1 filename1], [data_nm '/YrA'])';
