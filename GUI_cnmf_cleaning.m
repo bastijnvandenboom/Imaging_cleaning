@@ -152,6 +152,9 @@ set(handles.checkmergetxt, 'String', 'Click "Find repeats"'); % update values in
 [filename1, filepath1] = uigetfile('*.*', 'Select raw .hdf5 cnmf (caiman) output file or preprocessed .mat file');
 cd(filepath1)
 
+% update user
+set(handles.user_alert, 'String', sprintf('Loading data, please wait'));
+
 % check if we want to plot bad ROIs
 handles.plot_bad = get(handles.check_plot_bad, 'Value'); % 0=good ROIs, 1=bad ROIs
 handles.plot_bad_update = 0;    % prevent updating bad ROI plotting
@@ -2322,7 +2325,17 @@ try % not everyone has the (pw)rigid movements
 catch end
 
 % store good or all ROIs -> if all, the bad ROIs go into delete list
-if handles.plot_bad == 0 % good ROIs
+if isequal(rois_good, rois_bad') % user decided to discard all the bad rois
+    % store only the good rois
+    output.C_raw = C_raw(:, :);
+    output.C = C(:, :);
+    output.S = S(:, :);
+    output.A = A(:, :);
+    try % not everyone has these vars
+        output.residuals = residuals(:, :);
+        output.SNR_cnmf = SNR(:, :);
+    catch end
+elseif handles.plot_bad == 0 % only good ROIs
     % store only the good rois
     output.C_raw = C_raw(rois_good, :);
     output.C = C(rois_good, :);
