@@ -43,7 +43,7 @@ function varargout = GUI_cnmf_cleaning(varargin)
 
 % Edit the above text to modify the response to help GUI_cnmf_cleaning
 
-% Last Modified by GUIDE v2.5 22-Nov-2025 14:05:30
+% Last Modified by GUIDE v2.5 22-Nov-2025 17:15:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1354,6 +1354,33 @@ else
     set(handles.user_alert, 'String', sprintf('Important: plot bad ROIs of raw output only once!'));
 end
 
+% --- Executes on button press in flip_bg.
+function flip_bg_Callback(hObject, eventdata, handles)
+% hObject    handle to flip_bg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of flip_bg
+
+% try to plot during GUI usage
+try 
+% ROI(s) to plot
+if handles.to_plot == 0; % plot mergepair
+    idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+elseif handles.to_plot == 1; % plot single ROI
+    idx = handles.plot_roi; % plot roi
+elseif handles.to_plot == 2; % plot manual ROI pair
+    idx = handles.manualpair;
+end
+
+% plot background (Cn or Mn) and ROI contours (idx)
+plot_spatial_components(handles, idx)
+
+catch; end
+
+% store data
+guidata(hObject,handles);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PLOTTING
 
@@ -2226,11 +2253,23 @@ plot_cn_mn = get(handles.cn_mn_plot,'Value');
 
 % plot figure
 if plot_cn_mn == 1 % plot Cn
-    imagesc(fliplr(rot90(handles.rawdata1.results.Cn, -1)))
+    % check if we need to flip the background
+    flip_bg = get(handles.flip_bg, 'Value'); % 0=no flip, 1=flip
+    if flip_bg == 0
+        imagesc(fliplr(rot90(handles.rawdata1.results.Cn, -1)))
+    else
+        imagesc(handles.rawdata1.results.Cn)
+    end
     tmp_max = ( min(min(handles.rawdata1.results.Cn)) + ((max(max(handles.rawdata1.results.Cn)) - min(min(handles.rawdata1.results.Cn))) / c_lim_reduction) );
     clim([ min(min(handles.rawdata1.results.Cn)) + ((tmp_max - min(min(handles.rawdata1.results.Cn))) / 2) tmp_max]);
 elseif plot_cn_mn == 2 % plot Mn
-    imagesc(fliplr(rot90(handles.rawdata1.results.Mn, -1)))
+    % check if we need to flip the background
+    flip_bg = get(handles.flip_bg, 'Value'); % 0=no flip, 1=flip
+    if flip_bg == 0
+        imagesc(fliplr(rot90(handles.rawdata1.results.Mn, -1)))
+    else
+        imagesc(handles.rawdata1.results.Mn)
+    end
     clim([min(min(handles.rawdata1.results.Mn)) ...
         ( min(min(handles.rawdata1.results.Mn)) + ((max(max(handles.rawdata1.results.Mn)) - min(min(handles.rawdata1.results.Mn))) / c_lim_reduction) )]);
 end
