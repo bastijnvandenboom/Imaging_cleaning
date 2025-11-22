@@ -43,7 +43,7 @@ function varargout = GUI_cnmf_cleaning(varargin)
 
 % Edit the above text to modify the response to help GUI_cnmf_cleaning
 
-% Last Modified by GUIDE v2.5 27-Feb-2025 16:19:44
+% Last Modified by GUIDE v2.5 22-Nov-2025 14:05:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -153,7 +153,7 @@ set(handles.checkmergetxt, 'String', 'Click "Find repeats"'); % update values in
 cd(filepath1)
 
 % update user
-set(handles.user_alert, 'String', sprintf('Loading data, please wait'));
+set(handles.user_alert, 'String', sprintf('Loading data, please wait...'));
 
 % check if we want to plot bad ROIs
 handles.plot_bad = get(handles.check_plot_bad, 'Value'); % 0=good ROIs, 1=bad ROIs
@@ -166,7 +166,7 @@ tmp = tmp{end};
 % update user and load data
 if strcmp(tmp, 'mat') % mat file
     % update user
-    set(handles.user_alert, 'String', sprintf('Loading .mat file, please wait'));
+    set(handles.user_alert, 'String', sprintf('Loading .mat file, please wait...'));
     % load file
     handles.rawdata1 = load([filepath1 filename1]);   % all raw data
     % update bad ROIs if needed
@@ -184,7 +184,7 @@ if strcmp(tmp, 'mat') % mat file
 
 elseif strcmp(tmp, 'hdf5') % raw output
     % update user
-    set(handles.user_alert, 'String', sprintf('Loading .hdf5 file, please wait'));
+    set(handles.user_alert, 'String', sprintf('Loading .hdf5 file, please wait...'));
     % load file
     handles.rawdata1.results = load_cnmf_hdf5(filename1, filepath1, handles);
 
@@ -236,7 +236,7 @@ function start_gui_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % update user
-set(handles.user_alert, 'String', sprintf('Starting GUI, please wait'));
+set(handles.user_alert, 'String', sprintf('Starting GUI, please wait...'));
 pause(0.1); % make sure to update user_alert
 
 % clear panels
@@ -409,6 +409,9 @@ plot_histo_snr(handles)
 
 % plot histogram of size
 plot_histo_size(handles)
+
+% update user
+set(handles.user_alert, 'String', sprintf('GUI running'));
 
 % store data
 guidata(hObject,handles);
@@ -597,7 +600,7 @@ folder_name = uigetdir;
 file_str = sprintf('%s\\updated_cnmf.mat', folder_name);
   
 % update user
-set(handles.user_alert, 'String', sprintf('Storing data, please wait'));
+set(handles.user_alert, 'String', sprintf('Storing data, please wait...'));
 
 % generate results struct
 results = handles.rawdata1.results;
@@ -660,6 +663,9 @@ set(handles.slidertoaddtodellist, 'Max', size(handles.updatedCraw,1), 'Value', r
 % ROI(s) to plot
 handles.plot_roi = get(handles.slidertoaddtodellist,'Value');
 idx = handles.plot_roi;
+
+% update user
+set(handles.user_alert, 'String', sprintf(['Plotting ROI: ' num2str(idx)]));
 
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
@@ -926,6 +932,9 @@ handles.mergecells = mlist; % update actual list
 % ROI(s) to plot
 idx = roi_vals; % ROI 1 and ROI 2
 
+% update user
+set(handles.user_alert, 'String', sprintf(['Plotting ROIs: ' num2str(idx)]));
+
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
 
@@ -956,6 +965,9 @@ if handles.pairs_currentcompare~=1
 
     % ROI(s) to plot
     idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+
+    % update user
+    set(handles.user_alert, 'String', sprintf(['Plotting ROIs: ' num2str(idx)]));
 
     % plot background (Cn or Mn) and ROI contours (idx)
     plot_spatial_components(handles, idx)
@@ -988,6 +1000,9 @@ if handles.pairs_currentcompare~=length(handles.pairs_cells1)
 
     % ROI(s) to plot
     idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+
+    % update user
+    set(handles.user_alert, 'String', sprintf(['Plotting ROIs: ' num2str(idx)]));
 
     % plot background (Cn or Mn) and ROI contours (idx)
     plot_spatial_components(handles, idx)
@@ -1253,6 +1268,9 @@ k2 = get(handles.mergelist,'String');   % all pairs in list
 tmp = k2(k1);   % actual roi pair
 idx = str2num(cell2mat(tmp)); % values ROI1 and 2
 
+% update user
+set(handles.user_alert, 'String', sprintf(['Plotting ROIs: ' num2str(idx)]));
+
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
 
@@ -1456,7 +1474,7 @@ function plot_rois_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of plot_rois
 
 % update user
-set(handles.user_alert, 'String', sprintf('Plotting all ROIs, please wait'));
+set(handles.user_alert, 'String', sprintf('Plotting all ROIs, please wait...'));
 
 % ROI(s) to plot
 idx = 1:size(handles.updatedCraw,1); % all ROIs
@@ -1466,6 +1484,32 @@ plot_spatial_components(handles, idx)
 
 % turn off radio button
 set(handles.plot_rois, 'Value', 0);
+
+% update user
+set(handles.user_alert, 'String', sprintf('Contours of all ROIs plotted'));
+
+function concat_mark_Callback(hObject, eventdata, handles)
+% hObject    handle to concat_mark (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of concat_mark as text
+%        str2double(get(hObject,'String')) returns contents of concat_mark as a double
+
+% ROI(s) to plot
+if handles.to_plot == 0; % plot mergepair
+    idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+elseif handles.to_plot == 1; % plot single ROI
+    idx = handles.plot_roi; % plot roi
+elseif handles.to_plot == 2; % plot manual ROI pair
+    idx = handles.manualpair;
+end
+
+% plot temporal traces of the first pair
+plot_temporal_traces(handles, idx)
+
+% store data
+guidata(hObject,handles);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SINGLE ROI DATA
@@ -1978,6 +2022,19 @@ function histsize_CreateFcn(hObject, eventdata, handles)
 % Hint: place code in OpeningFcn to populate histsize
 
 
+% --- Executes during object creation, after setting all properties.
+function concat_mark_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to concat_mark (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ALL FUNCTIONS
 
 
@@ -2144,6 +2201,15 @@ else % plot C
 
 end
 
+% plot concatenate marks
+concat_mark =  str2num(get(handles.concat_mark,'String')); % get concatenation marks
+concat_tmp = [concat_mark : concat_mark : size(handles.updatedCraw,2)]; % make vector
+hold(handles.ax1,'on')
+for k=1:length(concat_tmp) % plot per mark
+    plot(handles.ax1, [concat_tmp(k) concat_tmp(k)], [min(min_val) max(max_val)], ":", 'Color', 'k'); % [min(min_val) min(min_val)], "."
+end
+hold(handles.ax1,'off')
+
 
 function plot_spatial_components(handles, idx)
 % plot background (Cn or Mn) and spatial components in ax2
@@ -2291,8 +2357,8 @@ C = h5read([filepath1 filename1], [data_nm '/C'])';
 S = h5read([filepath1 filename1], [data_nm '/S'])';
 spat_bgnd_comp = h5read([filepath1 filename1], [data_nm '/b']);
 temp_bgnd_comp = h5read([filepath1 filename1], [data_nm '/f']);
-rois_good = h5read([filepath1 filename1], [data_nm '/idx_components']) +1 % MATLAB is 1-based
-rois_bad = h5read([filepath1 filename1], [data_nm '/idx_components_bad']) +1 % MATLAB is 1-based
+rois_good = h5read([filepath1 filename1], [data_nm '/idx_components']) +1; % MATLAB is 1-based
+rois_bad = h5read([filepath1 filename1], [data_nm '/idx_components_bad']) +1; % MATLAB is 1-based
 rois_bad = rois_bad'; %
 try % not everyone has these vars
     residuals = h5read([filepath1 filename1], [data_nm '/YrA'])';
