@@ -22,5 +22,3 @@ Make sure there are no repeated ROIs in the merge list before merging. Find them
 
 ![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/acf47f6581f8f6244a7e98fa797644d8b6ec30e0/GUI_example.png)
 
-![screenshot_GUI](https://github.com/user-attachments/assets/cfc76e9c-7b3a-46e5-832e-26a32d7470ca)
-
