@@ -5,11 +5,20 @@ It loads CNMF (Caiman) .mat or .hdf5 files and allows the user to manually curat
 
 Clone/download the code, add to your Matlab path, run GUI_cnmf_cleaning.
 
-Settings: allows to apply thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, signal-to-noise (SNR) minimum value) and thresholds to identify potential merge pairs (distance threshold, correlation threshold)
-Checking Bad ROIs will move ROIs identified as unusable by Caiman to the delete list
-ROIs that do not fullfil spatial and SNR will be moved to the delete list
-ROI pairs that fullfil the merge pair thresholds will be accessible in the Merge panel
-Plotting: allows to change visulization while running the GUI (contour threshold, scaling of plot, correlation image vs maximum projection, DF/F vs denoised)
+Settings: allows to filter ROIs and identify merge pairs
+- Thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, signal-to-noise (SNR) minimum value)
+- Thresholds to identify potential merge pairs (distance threshold, correlation threshold)
+- Checking Bad ROIs will move ROIs identified as unusable by Caiman to the delete list
+- Checking Flip bg will flip the background (useful for old Matlab-based CNMF-e)
+- ROIs that do not fullfil spatial and SNR will be moved to the delete list
+- ROI pairs that fullfil the merge pair thresholds will be accessible in the Merge panel
+Plotting: allows to change visulization while running the GUI
+- Contour threshold changes the fraction of pixels to include to plot contour
+- Scaling plot changes the scaling of the colorbar
+- Cn/Mn plots correlation image (Cn) or maximum projection (Mn)
+- C_raw/C plots DF/F (C_raw) or denoised signal (C)
+- Concat mark plots repetitive black dotted lines on the temporal traces (useful to indicate recording duration or file size)
+- Plot contours during GUI plots contours of all ROIs when you are in the GUI
 
 While visualizing single ROIs in the Delete panel, the Single ROI info will update
 While visualizing ROI pairs in the Merge panel, Merge pair info will update
