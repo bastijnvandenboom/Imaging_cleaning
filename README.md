@@ -25,10 +25,11 @@ While visualizing single ROIs in the Delete panel, the Single ROI info will upda
 
 While visualizing ROI pairs in the Merge panel, Merge pair info will update
 
-Delete panel: allows for single ROI visualization, adding and removing from delete list. Hit Delete (red button) to actually delete ROIs that are in the delete list.
+Delete panel: allows for single ROI visualization, and adding and removing from delete list. Hit Delete (red button) to actually delete ROIs that are in the delete list.
+
 Merge panel: go through ROI pairs that are identified by the distance and correlation threshold settings. Use Add pair to add to the merge list. Use the dropdown buttons to manually select 2 ROIs and press Manual add to add to the merge list. Use Find repeats to identify ROIs that occur more than once in the merge list. Use Run multi-merge to automatically find ideal merge pairs. Rerun multi-merge if ROIs are still repeated. Hit Merge (red button) to actually merge ROIs that are in the merge list. 
 
-Workflow: change settings, load data, start gui, work on delete or merge panel, delete or merge the data, save data, restart gui for a next round of cleaning
+Workflow: change settings, load file, start gui, work on either delete or merge panel, delete or merge the data, save data, restart gui for a next round of cleaning (to remove backend data)
 
 Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore
 
