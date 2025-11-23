@@ -5,7 +5,8 @@ It loads CNMF (Caiman) .mat or .hdf5 files and allows the user to manually curat
 
 Clone/download the code, add to your Matlab path, run GUI_cnmf_cleaning.
 
-Settings: allows to apply thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, SNR minimum value) and thresholds to identify potential merge pairs (distance threshold, correlation threshold)
+Settings: allows to apply thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, signal-to-noise (SNR) minimum value) and thresholds to identify potential merge pairs (distance threshold, correlation threshold)
+Checking Bad ROIs will move ROIs identified as unusable by Caiman to the delete list
 ROIs that do not fullfil spatial and SNR will be moved to the delete list
 ROI pairs that fullfil the merge pair thresholds will be accessible in the Merge panel
 Plotting: allows to change visulization while running the GUI (contour threshold, scaling of plot, correlation image vs maximum projection, DF/F vs denoised)
