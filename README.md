@@ -5,7 +5,19 @@ It loads CNMF (Caiman) .mat or .hdf5 files and allows the user to manually curat
 
 Clone/download the code, add to your Matlab path, run GUI_cnmf_cleaning.
 
-Settings: allows to filter ROIs and identify merge pairs
+Start by changing settings:
+
+Selection: allows to filter ROIs
+- Spatial min: minimum number of pixels to include an ROI (0=include all)
+- Spatial max: maximum number of pixels to include an ROI (0=include all)
+- SNR min: minimum signal-to-noise (SNR) value to include ROI
+- Bad ROIs: move all ROIs identified as unusable by Caiman to delete list (unchecked, don't plot at all)
+
+Merge: filters to identify merge pairs (merge pairs will be in Merge panel)
+- Dist thr: find ROIs within this distance (number of pixels)
+- Correl thr: minimum correlation between ROIs
+
+- 
 - Thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, signal-to-noise (SNR) minimum value)
 - Thresholds to identify potential merge pairs (distance threshold, correlation threshold)
 - Checking Bad ROIs will move ROIs identified as unusable by Caiman to the delete list
@@ -14,12 +26,23 @@ Settings: allows to filter ROIs and identify merge pairs
 - ROI pairs that fullfil the merge pair thresholds will be accessible in the Merge panel
 
 Plotting: allows to change visulization while running the GUI
-- Contour threshold changes the fraction of pixels to include to plot contour
-- Scaling plot changes the scaling of the colorbar
-- Cn/Mn plots correlation image (Cn) or maximum projection (Mn)
-- C_raw/C plots DF/F (C_raw) or denoised signal (C)
-- Concat mark plots repetitive black dotted lines on the temporal traces (useful to indicate recording duration or file size)
-- Plot contours during GUI plots contours of all ROIs when you are in the GUI
+- Contour thr: threshold for the fraction of pixels to include to plot contours or ROIs
+- Scaling plot: change the scaling of the colorbar
+- Cn/Mn: plot correlation image (Cn) or maximum projection (Mn)
+- C_raw/C: plot DF/F (C_raw) or denoised signal (C)
+- Concat mark: plots repetitive black dotted lines on the temporal traces (useful to indicate recording duration or file size)
+- Flip bg: checked will flip the background (useful for old Matlab-based CNMF-e)
+- Plot all contours: during GUI, checking this will plot contours of all ROIs
+
+Start GUI
+- Load File: manual select file (.hdf5 or .mat)
+- START GUI: start GUI
+- restart GUI: restart the GUI (either do all deletes or all merges, then save data, then restart GUI)
+
+Save data
+- Delete: delete ROIs in delete list
+- Merge: merge ROIs in merge list (make sure no ROI values are repeated)
+- Save data: store cleaned data
 
 While visualizing single ROIs in the Delete panel, the Single ROI info will update
 
