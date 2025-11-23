@@ -12,6 +12,7 @@ Settings: allows to filter ROIs and identify merge pairs
 - Checking Flip bg will flip the background (useful for old Matlab-based CNMF-e)
 - ROIs that do not fullfil spatial and SNR will be moved to the delete list
 - ROI pairs that fullfil the merge pair thresholds will be accessible in the Merge panel
+
 Plotting: allows to change visulization while running the GUI
 - Contour threshold changes the fraction of pixels to include to plot contour
 - Scaling plot changes the scaling of the colorbar
