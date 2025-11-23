@@ -22,6 +22,7 @@ Plotting: allows to change visulization while running the GUI
 - Plot contours during GUI plots contours of all ROIs when you are in the GUI
 
 While visualizing single ROIs in the Delete panel, the Single ROI info will update
+
 While visualizing ROI pairs in the Merge panel, Merge pair info will update
 
 Delete panel: allows for single ROI visualization, adding and removing from delete list. Hit Delete (red button) to actually delete ROIs that are in the delete list.
