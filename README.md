@@ -17,14 +17,6 @@ Merge: filters to identify merge pairs (merge pairs will be in Merge panel)
 - Dist thr: find ROIs within this distance (number of pixels)
 - Correl thr: minimum correlation between ROIs
 
-- 
-- Thresholds for including ROIs (spatial minimun pixels, spatial maximum pixels, signal-to-noise (SNR) minimum value)
-- Thresholds to identify potential merge pairs (distance threshold, correlation threshold)
-- Checking Bad ROIs will move ROIs identified as unusable by Caiman to the delete list
-- Checking Flip bg will flip the background (useful for old Matlab-based CNMF-e)
-- ROIs that do not fullfil spatial and SNR will be moved to the delete list
-- ROI pairs that fullfil the merge pair thresholds will be accessible in the Merge panel
-
 Plotting: allows to change visulization while running the GUI
 - Contour thr: threshold for the fraction of pixels to include to plot contours or ROIs
 - Scaling plot: change the scaling of the colorbar
