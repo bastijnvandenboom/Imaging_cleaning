@@ -8,8 +8,8 @@ Clone/download the code, add to your Matlab path, run GUI_cnmf_cleaning.
 Start by changing settings:
 
 Selection: allows to filter ROIs
-- Spatial min: minimum number of pixels to include an ROI (0=include all)
-- Spatial max: maximum number of pixels to include an ROI (0=include all)
+- Spat min: minimum number of pixels (spatial) to include an ROI (0=include all)
+- Spat max: maximum number of pixels (spatial) to include an ROI (0=include all)
 - SNR min: minimum signal-to-noise (SNR) value to include ROI
 - Bad ROIs: move all ROIs identified as unusable by Caiman to delete list (unchecked, don't plot at all)
 
@@ -18,8 +18,8 @@ Merge: filters to identify merge pairs (merge pairs will be in Merge panel)
 - Correl thr: minimum correlation between ROIs
 
 Plotting: allows to change visulization while running the GUI
-- Contour thr: threshold for the fraction of pixels to include to plot contours or ROIs
-- Scaling plot: change the scaling of the colorbar
+- Cont thr: threshold for the fraction of pixels to include to plot contours or ROIs
+- Scale plot: change the scaling of the colorbar
 - Cn/Mn: plot correlation image (Cn) or maximum projection (Mn)
 - C_raw/C: plot DF/F (C_raw) or denoised signal (C)
 - Concat mark: plots repetitive black dotted lines on the temporal traces (useful to indicate recording duration or file size)
@@ -48,5 +48,5 @@ Workflow: change settings, load file, start gui, work on either delete or merge 
 
 Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore
 
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/96c3990390404d551ee9eab17e0b01a15220a9c6/GUI_example.png)
+![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/1b3c0ab46e994bbff855c572edf76d85500dbb4d/GUI_example.png)
 
