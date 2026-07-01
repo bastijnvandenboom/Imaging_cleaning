@@ -50,5 +50,5 @@ Make sure there are no repeated ROIs in the merge list before merging. Find them
 
 GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/e5fcfc9cfb172cbab04528432af93c2e9451666a/GUI_example.png)
+![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/dcb60d3c64fc94166dbb29caa470e63a848586f7/GUI_example.png)
 
