@@ -1,5 +1,5 @@
 # Imaging_cleaning
-GUI to clean calcium imaging data of 1 and 2 photon data.
+Matlab GUI to clean calcium imaging dataset of 1 and 2 photon imaging experiments.
 
 It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files. GUI allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
@@ -36,17 +36,19 @@ Save data
 - Merge: merge ROIs in merge list (make sure no ROI values are repeated)
 - Save data: store cleaned data
 
-While visualizing single ROIs in the Delete panel, the Single ROI info will update
+While visualizing single ROIs in the Delete panel, the Single ROI info will update.
 
-While visualizing ROI pairs in the Merge panel, Merge pair info will update
+While visualizing ROI pairs in the Merge panel, Merge pair info will update.
 
 Delete panel: allows for single ROI visualization, and adding and removing from delete list. Hit Delete (red button) to actually delete ROIs that are in the delete list.
 
 Merge panel: go through ROI pairs that are identified by the distance and correlation threshold settings. Use Add pair to add to the merge list. Use the dropdown buttons to manually select 2 ROIs and press Manual add to add to the merge list. Use Find repeats to identify ROIs that occur more than once in the merge list. Use Run multi-merge to automatically find ideal merge pairs. Rerun multi-merge if ROIs are still repeated. Hit Merge (red button) to actually merge ROIs that are in the merge list. 
 
-Workflow: change settings, load file, start gui, work on either delete or merge panel, delete or merge the data, save data, restart gui for a next round of cleaning (to remove backend data)
+Workflow: change settings, load file, start gui, work on either delete or merge panel, delete or merge the data, save data, restart gui for a next round of cleaning (to remove backend data).
 
-Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore
+Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore.
+
+GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
 ![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/e5fcfc9cfb172cbab04528432af93c2e9451666a/GUI_example.png)
 
