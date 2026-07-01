@@ -326,16 +326,27 @@ end
 % get full ROI, center of mass, and size A
 [Cent_N, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
 
-% loop through roi pairs to get correlation and distance - SLOW step
-for i = 1:size(handles.updatedCraw,1) % for each roi
-    for j = i:size(handles.updatedCraw,1) % for each other roi
-        handles.dist_mat(j,i) = sqrt((Cent_N(i,1) - Cent_N(j,1))^2 + (Cent_N(i,2) - Cent_N(j,2))^2); % get distance
-        handles.corr_mat(j,i) = corr(handles.updatedCraw(i,:)',handles.updatedCraw(j,:)'); % get correlation
-    end
-end
+% % loop through roi pairs to get correlation and distance - SLOW step
+% for i = 1:size(handles.updatedCraw,1) % for each roi
+%     for j = i:size(handles.updatedCraw,1) % for each other roi
+%         handles.dist_mat(j,i) = sqrt((Cent_N(i,1) - Cent_N(j,1))^2 + (Cent_N(i,2) - Cent_N(j,2))^2); % get distance
+%         handles.corr_mat(j,i) = corr(handles.updatedCraw(i,:)',handles.updatedCraw(j,:)'); % get correlation
+%     end
+% end
 
-% for dist and corr: get lower triangular part of matrix by replacing the top part with NaNs
-tril_mask = tril(true(size(handles.dist_mat)), -1);
+% % for dist and corr: get lower triangular part of matrix by replacing the top part with NaNs
+% tril_mask = tril(true(size(handles.dist_mat)), -1);
+% handles.dist_mat(~tril_mask) = NaN;
+% handles.corr_mat(~tril_mask) = NaN;
+
+% vectorized distance and correlation across all ROI pairs
+dist_mat_full = squareform(pdist(Cent_N, 'euclidean'));   % [N x N] pairwise distances
+corr_mat_full = corr(handles.updatedCraw');                % [N x N] pairwise correlations (updatedCraw is [N x T], corr expects [T x N])
+
+% keep only lower triangular part (below diagonal), set rest to NaN
+tril_mask = tril(true(size(dist_mat_full)), -1);
+handles.dist_mat = dist_mat_full;
+handles.corr_mat = corr_mat_full;
 handles.dist_mat(~tril_mask) = NaN;
 handles.corr_mat(~tril_mask) = NaN;
 
