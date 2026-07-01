@@ -1,9 +1,9 @@
 # Imaging_cleaning
-GUI to clean CNMF (Caiman) calcium imaging data of 1 and 2 photon data.
+GUI to clean calcium imaging data of 1 and 2 photon data.
 
-It loads CNMF (Caiman) .mat or .hdf5 files and allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
+It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files. GUI allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
-Clone/download the code, add to your Matlab path, run GUI_cnmf_cleaning.
+Clone/download the code, add to your Matlab path, run GUI_imaging_cleaning.
 
 Start by changing settings:
 
@@ -48,5 +48,5 @@ Workflow: change settings, load file, start gui, work on either delete or merge 
 
 Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore
 
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/1b3c0ab46e994bbff855c572edf76d85500dbb4d/GUI_example.png)
+![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/e5fcfc9cfb172cbab04528432af93c2e9451666a/GUI_example.png)
 
