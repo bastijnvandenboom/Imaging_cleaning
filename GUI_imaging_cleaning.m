@@ -437,6 +437,11 @@ plot_temporal_traces(handles, idx)
 % plot ROI pair info
 plot_roi_info(handles, idx)
 
+% plot distance vs crosscorr: all data
+plot(handles.distcorr, handles.dist, handles.corr, '.', 'Color', handles.color_plots(1,:), 'LineStyle', 'none', 'MarkerSize', 10);
+ylim(handles.distcorr, [-1 1]); % set y-axis limits
+hold(handles.distcorr,'on')
+
 % define slider location
 set(handles.slidertoaddtodellist, 'Min', 1, 'Max', size(handles.updatedCraw,1), 'SliderStep', [1/(size(handles.updatedCraw,1)-1),1], 'Value', 1)
 
@@ -627,7 +632,6 @@ plot_histo_size(handles)
 
 % store data
 guidata(hObject,handles);
-
 
 function user_alert_Callback(hObject, eventdata, handles)
 % hObject    handle to user_alert (see GCBO)
@@ -2428,11 +2432,6 @@ function plot_roi_info(handles, idx)
 % plot info regarding ROIs
 % 1 ROI: update roi index and SNR
 % 2 ROIs: roi indices, dist and corr, and dist vs corr plot (ax3)
-
-% plot distance vs crosscorr: all data
-plot(handles.distcorr, handles.dist, handles.corr, '.', 'Color', handles.color_plots(1,:), 'LineStyle', 'none', 'MarkerSize', 10);
-ylim(handles.distcorr, [-1 1]); % set y-axis limits
-hold(handles.distcorr,'on')
 
 % figure out how many ROIs
 if length(idx) == 1 % 1 roi
