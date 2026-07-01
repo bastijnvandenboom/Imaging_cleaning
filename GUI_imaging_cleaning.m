@@ -82,6 +82,9 @@ handles.plot_bad_update = 1;
 % allow zooming figures
 zoom on
 
+% open in center of screen
+movegui(hObject, 'center');
+
 % start_gui handles structure
 guidata(hObject, handles);
 
