@@ -410,10 +410,6 @@ if handles.plot_bad == 1 % bad ROIs
 
     % start a compare pair
     handles.pairs_currentcompare = 1;
-
-    % update user
-    set(handles.user_alert, 'String', sprintf('Delete or merge, then save'));
-    pause(0.1); % make sure to update user_alert
 else
     % store that we plot a mergepair
     handles.to_plot = 0;
@@ -429,9 +425,6 @@ else
         handles.to_plot = 1;
         % plot the first ROI
         idx = 1;
-        % update user
-        set(handles.user_alert, 'String', sprintf('No merge pairs found!\nDelete or merge, then save'));
-        pause(0.1); % make sure to update user_alert
     end
 end
 
@@ -460,7 +453,7 @@ plot_histo_size(handles)
 if handles.to_plot == 0  % plotting merge pairs
     set(handles.user_alert, 'String', sprintf('Plotting ROIs: %s', num2str(idx)));
 else
-    set(handles.user_alert, 'String', sprintf('GUI running'));
+    set(handles.user_alert, 'String', sprintf(['Plotting ROI: ' num2str(idx)]));
 end
 pause(0.1);
 
@@ -774,6 +767,10 @@ if handles.plot_roi ~= size(handles.updatedCraw,1)
     % plot ROI pair info
     plot_roi_info(handles, idx)
 
+    % update user
+    set(handles.user_alert, 'String', sprintf(['Plotting ROI: ' num2str(idx)]));
+    pause(0.1); % make sure to update user_alert
+
 end
 
 % update user buttons
@@ -809,13 +806,13 @@ if k1 <= size(k2,1) % select the next ROI
     % select the next ROI in the dellist
     set(handles.deletelist, 'String', k2, 'Value', k1);
 
-elseif size(k2,1) == 0 % we're removed the last ROI in the deletelist
+elseif size(k2,1) == 0 % we've removed the last ROI in the deletelist
 
     % ROI(s) to plot -> make it ROI 1
     idx = 1;
     handles.plot_roi = idx;
 
-elseif k1-1 == size(k2,1) % we removed the last ROI
+elseif k1-1 == size(k2,1) % we are at the last ROI
 
     % ROI(s) to plot
     idx = str2num(k2(k1-1,:));
@@ -825,6 +822,10 @@ elseif k1-1 == size(k2,1) % we removed the last ROI
     set(handles.deletelist, 'String', k2, 'Value', k1-1);
 
 end
+
+% update user
+set(handles.user_alert, 'String', sprintf(['Plotting ROI: ' num2str(idx)]));
+pause(0.1); % make sure to update user_alert
 
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
@@ -860,6 +861,10 @@ k1 = get(handles.deletelist,'Value');
 k2 = str2num(get(handles.deletelist,'String'));
 idx = k2(k1);
 handles.plot_roi = idx;
+
+% update user
+set(handles.user_alert, 'String', sprintf(['Plotting ROI: ' num2str(idx)]));
+pause(0.1); % make sure to update user_alert
 
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
@@ -1133,6 +1138,10 @@ if handles.pairs_currentcompare ~= length(handles.pairs_cells1)
 
     % plot ROI pair info
     plot_roi_info(handles, idx)
+    
+    % update user
+    set(handles.user_alert, 'String', sprintf(['Plotting ROIs: ' num2str(idx)]));
+    pause(0.1); % make sure to update user_alert
 end
 
 % update user buttons
@@ -2420,12 +2429,21 @@ function plot_roi_info(handles, idx)
 % 1 ROI: update roi index and SNR
 % 2 ROIs: roi indices, dist and corr, and dist vs corr plot (ax3)
 
+% plot distance vs crosscorr: all data
+plot(handles.distcorr, handles.dist, handles.corr, '.', 'Color', handles.color_plots(1,:), 'LineStyle', 'none', 'MarkerSize', 10);
+ylim(handles.distcorr, [-1 1]); % set y-axis limits
+hold(handles.distcorr,'on')
+
 % figure out how many ROIs
 if length(idx) == 1 % 1 roi
     % display roi index and SNR value
     set(handles.roi_idx, 'String', sprintf('%d', idx));
     set(handles.roi_snr, 'String', sprintf('%.1f', handles.SNR(idx)));
     set(handles.roi_size, 'String', sprintf('%.0f', handles.pixels_A(idx)));
+
+    % update user
+    set(handles.user_alert, 'String', sprintf(['Plotting ROI: ' num2str(idx)]));
+    pause(0.1); % make sure to update user_alert
 
 else % more ROIs
     % plot cell identity
@@ -2440,11 +2458,6 @@ else % more ROIs
     % plot cell pair info
     set(handles.cell_pair_dist, 'String', sprintf('%.1f', handles.dist_mat(idx(1), idx(2))));
     set(handles.cell_pair_corr, 'String', sprintf('%.1f', handles.corr_mat(idx(1), idx(2))));
-
-    % plot distance vs crosscorr: all data
-    plot(handles.distcorr, handles.dist, handles.corr, '.', 'Color', handles.color_plots(1,:), 'LineStyle', 'none', 'MarkerSize', 10);
-    ylim(handles.distcorr, [-1 1]); % set y-axis limits
-    hold(handles.distcorr,'on')
 
     % plot distance vs crosscorr: current pair
     plot(handles.distcorr, handles.dist_mat(idx(1), idx(2)), handles.corr_mat(idx(1), idx(2)), '.', 'Color', handles.color_plots(2,:), 'LineStyle', 'none', 'MarkerSize', 20)
