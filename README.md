@@ -3,6 +3,8 @@ Matlab GUI to clean calcium imaging dataset of 1 and 2 photon imaging experiment
 
 It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files. GUI allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
+You load a raw session and use the GUI to either delete ROIs or merge ROIs (figure 1). You can include the "bad" ROIs (as defined by the ROI extraction software you used) and you can use multi-merge (merge more than 2 ROIs). Instead of going through all the ROIs, you can click on the spatial overview screen on an ROI which will be visualized (spatially and temporally) and can be deleted (figure 2).
+
 Clone/download the code, add to your Matlab path, run GUI_imaging_cleaning.
 
 Start by changing settings:
@@ -50,5 +52,9 @@ Make sure there are no repeated ROIs in the merge list before merging. Find them
 
 GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
+FIGURE 1 - overview of the GUI
 ![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/5b715442cc151e10e633421d4c515f25ddf1d454/GUI_example.png)
 
+FIGURE 2 - Use mouse to select an ROI
+
+![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/5b715442cc151e10e633421d4c515f25ddf1d454/GUI_example.png)
