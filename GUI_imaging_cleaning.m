@@ -560,7 +560,7 @@ function del_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % disable button
-set(handles.del,   'Enable', 'off');
+% set(handles.del,   'Enable', 'off');
 
 % update user
 set(handles.user_alert, 'String', sprintf('Deleting ROIs, please wait...'));
@@ -625,7 +625,7 @@ function merge_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % disable button
-set(handles.merge, 'Enable', 'off');
+% set(handles.merge, 'Enable', 'off');
 
 % update user
 set(handles.user_alert, 'String', sprintf('Merging ROIs, please wait...'));
@@ -1603,17 +1603,34 @@ function contour_thres_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of contour_thres as text
 %        str2double(get(hObject,'String')) returns contents of contour_thres as a double
 
+% update user
+set(handles.user_alert, 'String', sprintf('Updating contours, please wait...'));
+pause(0.1); % make sure to update user_alert
+
 % ROI(s) to plot
-if handles.to_plot == 0; % plot mergepair
-    idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
-elseif handles.to_plot == 1; % plot single ROI
-    idx = handles.plot_roi; % plot roi
-elseif handles.to_plot == 2; % plot manual ROI pair
-    idx = handles.manualpair;
+if isfield(handles, 'to_plot') % check if GUI started
+    if handles.to_plot == 0; % plot mergepair
+        idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+    elseif handles.to_plot == 1; % plot single ROI
+        idx = handles.plot_roi; % plot roi
+    elseif handles.to_plot == 2; % plot manual ROI pair
+        idx = handles.manualpair;
+    end
+else % GUI hasn't started
+
+    % update user
+    set(handles.user_alert, 'String', sprintf('Changed contours setting'));
+    pause(0.1); % make sure to update
+
+    return
 end
 
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Contours updated'));
+pause(0.1); % make sure to update user_alert
 
 % store data
 guidata(hObject,handles);
@@ -2638,14 +2655,15 @@ key = struct( ...
 
 function contour_handles = build_all_roi_contours(handles, contour_key)
 
-% draw one dim green contour per ROI (assumes hold(ax2,'on') already set)
+% draw one dim green contour per ROI directly into ax2, regardless of
+% current-axes/hold state (see ensure_roi_background)
 n_rois = contour_key.n_rois;
 contour_handles = gobjects(1, n_rois);
 
 for k = 1:n_rois
     roiImage = squeeze(handles.Afull(k,:,:));
     tmp_thres = min(roiImage(:)) + ((max(roiImage(:)) - min(roiImage(:))) * (1 - contour_key.thres));
-    [~, h] = contour(roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', handles.colors(4,:), 'EdgeAlpha', 0.5);
+    [~, h] = contour(handles.ax2, roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', handles.colors(4,:), 'EdgeAlpha', 0.5);
     contour_handles(k) = h;
 end
 
