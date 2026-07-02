@@ -1,8 +1,10 @@
-% GUI to plot cnmf (caiman) output and manual curate ROIs
+%% Matlab GUI to clean (calcium) imaging dataset of 1 and 2 photon imaging experiments, and cells, axons, and dendrites
 
-% GUI has 2 main functions, delete ROIs and merge ROIs
+% It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files
+% GUI allows the user to manually curate data
+% After deleting, merging, or both, it saves data as a .mat file for future analyses
 
-% cnmf (caiman) rejects many ROI (rois_bad), you can decide to plot those
+% caiman/cnmf-e/suite2p reject ROIs (rois_bad), you can decide to plot those
 % (check plot bad rois). if you do, those ROIs will go to the delete list
 
 % due to it's underlying structure, you need to delete or merge (not both
@@ -11,12 +13,12 @@
 % you can perform a delete after a merge and the otherway around, except
 % that merge pairs will not be redetected -> reload data to do so
 
-% in practise, you might have multiple rounds of deleting and merging
+% in practice, you might have multiple rounds of deleting and merging
 % (run GUI, save data, restart GUI, reload those data, and continue)
 
 % based on miniscope GUI (Aishwarya Parthasarathy and Bastijn van den Boom
 % at Willuhn lab, NIN)
-% 2025 Bastijn van den Boom (Sabatini lab, HMS)
+% 2026 Bastijn van den Boom (Sabatini lab, HMS)
 
 
 function varargout = GUI_imaging_cleaning(varargin)
@@ -1630,12 +1632,21 @@ set(handles.user_alert, 'String', sprintf('Updating background, please wait...')
 pause(0.1); % make sure to update user_alert
 
 % ROI(s) to plot
-if handles.to_plot == 0; % plot mergepair
-    idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
-elseif handles.to_plot == 1; % plot single ROI
-    idx = handles.plot_roi; % plot roi
-elseif handles.to_plot == 2; % plot manual ROI pair
-    idx = handles.manualpair;
+if isfield(handles, 'to_plot') % check if GUI started
+    if handles.to_plot == 0; % plot mergepair
+        idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+    elseif handles.to_plot == 1; % plot single ROI
+        idx = handles.plot_roi; % plot roi
+    elseif handles.to_plot == 2; % plot manual ROI pair
+        idx = handles.manualpair;
+    end
+else % GUI hasn't started
+
+    % update user
+    set(handles.user_alert, 'String', sprintf('Changed background setting'));
+    pause(0.1); % make sure to update
+
+    return
 end
 
 % plot background (Cn or Mn) and ROI contours (idx)
@@ -1666,12 +1677,21 @@ set(handles.user_alert, 'String', sprintf('Updating background, please wait...')
 pause(0.1); % make sure to update user_alert
 
 % ROI(s) to plot
-if handles.to_plot == 0; % plot mergepair
-    idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
-elseif handles.to_plot == 1; % plot single ROI
-    idx = handles.plot_roi; % plot roi
-elseif handles.to_plot == 2; % plot manual ROI pair
-    idx = handles.manualpair;
+if isfield(handles, 'to_plot') % check if GUI started
+    if handles.to_plot == 0; % plot mergepair
+        idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+    elseif handles.to_plot == 1; % plot single ROI
+        idx = handles.plot_roi; % plot roi
+    elseif handles.to_plot == 2; % plot manual ROI pair
+        idx = handles.manualpair;
+    end
+else % GUI hasn't started
+
+    % update user
+    set(handles.user_alert, 'String', sprintf('Changed background setting'));
+    pause(0.1); % make sure to update 
+
+    return
 end
 
 % plot background (Cn or Mn) and ROI contours (idx)
@@ -1697,13 +1717,26 @@ function craw_c_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns craw_c contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from craw_c
 
+% update user
+set(handles.user_alert, 'String', sprintf('Updating temporal plot, please wait...'));
+pause(0.1); % make sure to update user_alert
+
 % ROI(s) to plot
-if handles.to_plot == 0; % plot mergepair
-    idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
-elseif handles.to_plot == 1; % plot single ROI
-    idx = handles.plot_roi; % plot roi
-elseif handles.to_plot == 2; % plot manual ROI pair
-    idx = handles.manualpair;
+if isfield(handles, 'to_plot') % check if GUI started
+    if handles.to_plot == 0; % plot mergepair
+        idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
+    elseif handles.to_plot == 1; % plot single ROI
+        idx = handles.plot_roi; % plot roi
+    elseif handles.to_plot == 2; % plot manual ROI pair
+        idx = handles.manualpair;
+    end
+else % GUI hasn't started
+
+    % update user
+    set(handles.user_alert, 'String', sprintf('Changed temporal setting'));
+    pause(0.1); % make sure to update
+
+    return
 end
 
 % % plot background (Cn or Mn) and ROI contours (idx)
@@ -1711,6 +1744,10 @@ end
 
 % plot temporal traces of the first pair
 plot_temporal_traces(handles, idx)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Temporal plot updated'));
+pause(0.1); % make sure to update user_alert
 
 % store data
 guidata(hObject,handles);
