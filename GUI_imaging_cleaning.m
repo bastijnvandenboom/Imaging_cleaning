@@ -79,8 +79,11 @@ handles.output = hObject;
 % allow updating of plotting bad ROIs
 handles.plot_bad_update = 1;
 
-% allow zooming figures
-zoom on
+% NOTE: 'zoom on' used to run here, but any active interactive mode
+% (zoom, pan, or the toolbar's Data Cursor button) intercepts mouse
+% clicks before ax2's ButtonDownFcn ever runs, which breaks click-to-
+% select-ROI. Keep the toolbar off and leave interactive modes disabled
+% (see start_gui_Callback) so clicking a contour always selects it.
 
 % open in center of screen
 movegui(hObject, 'center');
@@ -121,6 +124,33 @@ function LoadFile_Callback(hObject, eventdata, handles)
 % clear command window
 clc
 
+% disable buttons that depend on a completed start_gui pass on the
+% about-to-be-loaded data - prevents stale-data errors if the user
+% clicks these before hitting "Start GUI" again (see start_gui_Callback)
+set(handles.start_gui, 'Enable', 'off');
+set(handles.del, 'Enable', 'off');
+set(handles.merge, 'Enable', 'off');
+set(handles.save, 'Enable', 'off');
+
+% wipe every plot axes so nothing from the previous session is left on
+% screen while the new file loads (previously these just sat there,
+% unchanged, until "Start GUI" repopulated them)
+cla(handles.ax1);
+cla(handles.ax2);
+cla(handles.distcorr);
+cla(handles.histsnr);
+cla(handles.histsize);
+
+% clear the user update text box too
+set(handles.user_alert, 'String', '');
+
+% explicitly invalidate the persistent ROI background/contour cache too
+% (see ensure_roi_background). cla() above deletes the cached graphics
+% objects, which ensure_roi_background's isgraphics() checks would catch
+% on their own - this just makes the reset explicit rather than relying
+% on that fallback
+setappdata(handles.ax2, 'roi_bg_cache', []);
+
 % clear handles fields of cnmf
 handles.rawdata1 = [];
 handles.updatedCraw = [];
@@ -141,16 +171,20 @@ handles.pairs_currentcompare = [];
 handles.multimergeidx = [];
 handles.plot_roi = [];
 handles.manualpair = [];
-set(handles.cell_pair1, 'Value', 0);
-set(handles.cell_pair2, 'Value', 0);
-set(handles.cell_pair_dist, 'Value', 0);
-set(handles.cell_pair_corr, 'Value', 0);
+% these are text/edit display controls, so it's 'String' (not 'Value')
+% that actually clears what's shown - 'Value' was a no-op on them,
+% which is why the single-ROI and merge-pair stats used to keep showing
+% the previous session's numbers after Load
+set(handles.cell_pair1, 'String', '');
+set(handles.cell_pair2, 'String', '');
+set(handles.cell_pair_dist, 'String', '');
+set(handles.cell_pair_corr, 'String', '');
 set(handles.n_pair, 'String', []);
-set(handles.plot_rois, 'Value', 0);
-set(handles.roi_idx, 'Value', 0);
-set(handles.n_rois, 'Value', 0);
-set(handles.roi_snr, 'Value', 0);
-set(handles.roi_size, 'Value', 0);
+set(handles.plot_rois, 'Value', 0); % this one is a checkbox - 'Value' is correct
+set(handles.roi_idx, 'String', '');
+set(handles.n_rois, 'String', '');
+set(handles.roi_snr, 'String', '');
+set(handles.roi_size, 'String', '');
 
 % clear panels
 set(handles.deletelist, 'String', sprintf('ROIs to delete'), 'Value', 1); % update values in deletelist
@@ -159,6 +193,16 @@ set(handles.checkmergetxt, 'String', 'Click "Find repeats"'); % update values in
 
 % user select file
 [filename1, filepath1] = uigetfile('*.*', 'Select raw .hdf5 cnmf (caiman), Fall.mat (Suite2P), ~.mat (CNMF-E), or .mat preprocessed file');
+
+% user cancelled the dialog (or closed it) without picking a file -
+% uigetfile then returns 0 for both outputs, and cd(0)/strsplit(0,...)
+% below would error. Bail out cleanly instead of crashing.
+if isequal(filename1, 0) || isequal(filepath1, 0)
+    set(handles.user_alert, 'String', 'Please select a file');
+    guidata(hObject, handles);
+    return
+end
+
 cd(filepath1)
 
 % update user
@@ -179,7 +223,7 @@ if strcmp(tmp, 'mat') % mat file
     file_vars = {whos('-file', [filepath1 filename1]).name};
     if any(strcmp(file_vars, 'iscell')) % suite2p output
         % update user
-        set(handles.user_alert, 'String', sprintf('Loading suite2p Fall.mat, please wait...'));
+        set(handles.user_alert, 'String', sprintf('Loading suite2p .mat, please wait...'));
         pause(0.1); % make sure to update user_alert
         % load file
         handles.rawdata1.results = load_suite2p_mat(filename1, filepath1, handles);
@@ -194,7 +238,9 @@ if strcmp(tmp, 'mat') % mat file
             handles.rawdata1.results.settings = handles.rawdata1.results.options;
         end
         % old MATLAB CNMF-E has transposed Cn (no Mn field) — fix orientation
-        if ~isfield(handles.rawdata1.results.options, 'fnames')
+        % only applies to raw legacy CNMF-E .mat (no pipeline tag yet); skip once
+        % settings.pipeline exists (suite2p/cnmf, or any previously GUI-saved file)
+        if ~isfield(handles.rawdata1.results.settings, 'pipeline') && ~isfield(handles.rawdata1.results.settings, 'fnames')
             handles.rawdata1.results.Cn = handles.rawdata1.results.Cn';
         end
         % update bad ROIs if needed
@@ -271,6 +317,9 @@ function start_gui_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% disable button
+set(handles.start_gui, 'Enable', 'off');
+
 % update user
 set(handles.user_alert, 'String', sprintf('Starting GUI, please wait...'));
 pause(0.1); % make sure to update user_alert
@@ -288,7 +337,7 @@ if handles.plot_bad == 1
 end
 
 % define colors
-handles.colors = [56/255 176/255 0/255; 0/255 0/255 255/255; 255/255 0/255 0/255]; % green, blue, red [single ROI, 2 ROIs]
+handles.colors = [56/255 176/255 0/255; 0/255 0/255 255/255; 255/255 0/255 0/255; 167/255 201/255 87/255]; % green, blue, red [single ROI, 2x dual ROIs, all contours]
 handles.color_plots = [.5 0 .5; 251/255 111/255 146/255]; % purple, pink [distance x corr and histo plots, selected ROIs]
 
 % calculate SNR
@@ -327,7 +376,7 @@ if ~isempty(idx_snr)
 end
 
 % get full ROI, center of mass, and size A
-[Cent_N, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
+[handles.Cent_N, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
 
 % % loop through roi pairs to get correlation and distance - SLOW step
 % for i = 1:size(handles.updatedCraw,1) % for each roi
@@ -343,7 +392,7 @@ end
 % handles.corr_mat(~tril_mask) = NaN;
 
 % vectorized distance and correlation across all ROI pairs
-dist_mat_full = squareform(pdist(Cent_N, 'euclidean'));   % [N x N] pairwise distances
+dist_mat_full = squareform(pdist(handles.Cent_N, 'euclidean'));   % [N x N] pairwise distances
 corr_mat_full = corr(handles.updatedCraw');                % [N x N] pairwise correlations (updatedCraw is [N x T], corr expects [T x N])
 
 % keep only lower triangular part (below diagonal), set rest to NaN
@@ -468,6 +517,14 @@ pause(0.1);
 % enable button
 set(handles.save, 'Enable', 'on');
 
+% force off the figure's classic interactive modes (zoom/pan/data cursor)
+% in case a toolbar button toggled one on - these would otherwise
+% intercept clicks before ax2's ButtonDownFcn (see plot_spatial_components)
+% ever runs
+zoom(handles.figure1, 'off');
+pan(handles.figure1, 'off');
+datacursormode(handles.figure1, 'off');
+
 % update user buttons
 update_button_states(handles)
 
@@ -500,6 +557,13 @@ function del_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% disable button
+set(handles.del,   'Enable', 'off');
+
+% update user
+set(handles.user_alert, 'String', sprintf('Deleting ROIs, please wait...'));
+pause(0.1); % make sure to update user_alert
+
 % get deletelist and delete values
 del_rois = str2num(get(handles.deletelist,'String'));
 handles.updatedCraw(del_rois,:) = [];
@@ -515,9 +579,10 @@ handles.pixels_A(:,del_rois) = [];
 
 % clear del_list
 set(handles.deletelist,'String',[]);
+handles.delcells = []; % also clear internal queue, else stale/shrunk indices carry over
 
 % update number of ROIs
-set(handles.user_alert, 'String', sprintf('Done deleting, save data!\n Number of ROIs: %d', size(handles.updatedCraw,1)))
+set(handles.user_alert, 'String', sprintf('Plotting all ROIs, please wait...'));
 pause(0.1); % make sure to update user_alert
 
 % update total n ROIs
@@ -529,13 +594,23 @@ if handles.plot_bad == 1 % plot bad ROIs
 end
 
 % get full ROI, center of mass, and size A
-[~, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
+[handles.Cent_N, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
 
 % plot histogram of SNR
 plot_histo_snr(handles)
 
 % plot histogram of size
 plot_histo_size(handles)
+
+% plot all rois
+% ROI(s) to plot
+idx = 1:size(handles.updatedCraw,1); % all ROIs
+
+% plot background (Cn or Mn) and ROI contours (idx)
+plot_spatial_components(handles, idx)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Done deleting, save data!\n Number of ROIs: %d', size(handles.updatedCraw,1)))
 
 % store data
 guidata(hObject,handles);
@@ -546,6 +621,13 @@ function merge_Callback(hObject, eventdata, handles)
 % hObject    handle to merge (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% disable button
+set(handles.merge, 'Enable', 'off');
+
+% update user
+set(handles.user_alert, 'String', sprintf('Merging ROIs, please wait...'));
+pause(0.1); % make sure to update user_alert
 
 % get ROIs to merge
 merge_rois = get(handles.mergelist,'String');
@@ -613,7 +695,7 @@ handles.pairs_cells2 = [];
 handles.mergecells = [];
 
 % update user
-set(handles.user_alert, 'String', sprintf('Done merging, save data!\n Number of ROIs: %d', size(handles.updatedCraw,1)))
+set(handles.user_alert, 'String', sprintf('Plotting all ROIs, please wait...'));
 pause(0.1); % make sure to update user_alert
 
 % update total n ROIs
@@ -625,7 +707,7 @@ if handles.plot_bad == 1 % plot bad ROIs
 end
 
 % get full ROI, center of mass, and size A
-[~, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
+[handles.Cent_N, handles.pixels_A, handles.Afull] = get_shape_size_A(handles);
 
 % plot histogram of SNR
 plot_histo_snr(handles)
@@ -633,8 +715,19 @@ plot_histo_snr(handles)
 % plot histogram of size
 plot_histo_size(handles)
 
+% plot all rois
+% ROI(s) to plot
+idx = 1:size(handles.updatedCraw,1); % all ROIs
+
+% plot background (Cn or Mn) and ROI contours (idx)
+plot_spatial_components(handles, idx)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Done merging, save data!\n Number of ROIs: %d', size(handles.updatedCraw,1)))
+
 % store data
 guidata(hObject,handles);
+
 
 function user_alert_Callback(hObject, eventdata, handles)
 % hObject    handle to user_alert (see GCBO)
@@ -650,6 +743,13 @@ function save_Callback(hObject, eventdata, handles)
 % hObject    handle to save (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% disable button
+set(handles.save, 'Enable', 'off');
+
+% update user
+set(handles.user_alert, 'String', sprintf('Preparing saving data, please wait...'));
+pause(0.1); % make sure to update user_alert
 
 % calculate SNR on the left over neurons
 handles.SNR = get_SNR(handles.updatedC, handles.updatedCraw);
@@ -678,14 +778,14 @@ results.GUI = 'true';
 % allow loading bad ROIs
 handles.plot_bad_update = 1;    % allow updating bad ROI plotting
 
-% ROI(s) to plot
-idx = 1:size(results.A,2); % all ROIs
-
-% plot background (Cn or Mn) and ROI contours (idx)
-plot_spatial_components(handles, idx)
+% % ROI(s) to plot
+% idx = 1:size(results.A,2); % all ROIs
+% 
+% % plot background (Cn or Mn) and ROI contours (idx)
+% plot_spatial_components(handles, idx)
 
 % save data
-save(file_str,'results');
+save(file_str,'results','-v7.3');
 
 % save screenshot figure
 fig1_str = sprintf('%s\\screenshot_GUI.png', folder_name);
@@ -837,7 +937,7 @@ pause(0.1); % make sure to update user_alert
 % plot background (Cn or Mn) and ROI contours (idx)
 plot_spatial_components(handles, idx)
 
-% plot temporal traces of the first pair
+% plot temporal traces
 plot_temporal_traces(handles, idx)
 
 % plot ROI pair info
@@ -1525,6 +1625,10 @@ function scale_cn_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of scale_cn as text
 %        str2double(get(hObject,'String')) returns contents of scale_cn as a double
 
+% update user
+set(handles.user_alert, 'String', sprintf('Updating background, please wait...'));
+pause(0.1); % make sure to update user_alert
+
 % ROI(s) to plot
 if handles.to_plot == 0; % plot mergepair
     idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
@@ -1539,6 +1643,10 @@ plot_spatial_components(handles, idx)
 
 % % plot temporal traces of the first pair
 % plot_temporal_traces(handles, idx)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Background updated'));
+pause(0.1); % make sure to update user_alert
 
 % store data
 guidata(hObject,handles);
@@ -1553,6 +1661,10 @@ function cn_mn_plot_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns cn_mn_plot contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from cn_mn_plot
 
+% update user
+set(handles.user_alert, 'String', sprintf('Updating background, please wait...'));
+pause(0.1); % make sure to update user_alert
+
 % ROI(s) to plot
 if handles.to_plot == 0; % plot mergepair
     idx = [handles.pairs_cells1(handles.pairs_currentcompare) handles.pairs_cells2(handles.pairs_currentcompare)]; % ROI 1 and ROI 2
@@ -1567,6 +1679,10 @@ plot_spatial_components(handles, idx)
 
 % % plot temporal traces of the first pair
 % plot_temporal_traces(handles, idx)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Background updated'));
+pause(0.1); % make sure to update user_alert
 
 % store data
 guidata(hObject,handles);
@@ -2175,18 +2291,27 @@ end
 
 
 function [snr] = get_SNR(dataC, dataCraw)
-% estimate SNR based on peaks / std(noise)
+% estimate SNR as (peak - baseline) / noise, in units of noise std
 % find location peaks based on C, value based on Craw
-% noise is all Craw data without peaks
+% noise/baseline are estimated from all Craw data without peaks
 % inputs:
 %   dataC = denoised trace to calculate peaks, T*1 vector, calcium trace
 %   dataCraw = raw trace to calculate noise, T*1 vector, calcium trace
-%   perc = percentile to use to estimate baseline
+%
+% NOTE: previous version computed snr = peak / prctile(baseline, 90),
+% i.e. a ratio of two raw magnitudes with no baseline subtraction. That
+% only approximates a real SNR when Craw already sits at ~0 baseline
+% (true for CNMF-E, roughly true for CaImAn's F_dff). It breaks for
+% suite2p, whose Craw (F - 0.7*Fneu) keeps the full resting fluorescence
+% offset, so peak/baseline collapsed toward 1 regardless of transient
+% size. Subtracting a low-percentile baseline (F0 estimate) before
+% dividing by a robust noise std makes the metric comparable across
+% toolboxes regardless of each one's absolute trace offset/scale.
 
 % fixed vars
 windowCraw = 5; % window before peak in C to find peak in Craw data
 windowCrawRemove = 2; % window around Craw peak to remove for baseline
-baselinePercentile = 90; % percentile baseline to infer noise
+baselinePercentile = 8; % low percentile of baseline (excl. peaks) used as F0 estimate
 
 % find peaks and baseline to calculate SNR
 for k = 1:size(dataC,1)    % per roi
@@ -2221,8 +2346,11 @@ for k = 1:size(dataC,1)    % per roi
     
     % calculate SNR
     if exist('max_val', 'var') % check if we have at least 1 max_val
-%         snr(k) = nanmedian(max_val) / nanstd(baseline);
-        snr(k) = nanmedian(max_val) / prctile(baseline, baselinePercentile);
+%         snr(k) = nanmedian(max_val) / nanstd(baseline);              % old: no baseline subtraction
+%         snr(k) = nanmedian(max_val) / prctile(baseline, 90);         % old: ratio of raw magnitudes
+        baseline_level = prctile(baseline, baselinePercentile);        % F0 estimate (low percentile, excl. peaks)
+        noise_std = 1.4826 * nanmedian(abs(baseline - nanmedian(baseline))); % robust std (MAD-based)
+        snr(k) = (nanmedian(max_val) - baseline_level) / noise_std;
     else
         snr(k) = nan;
     end
@@ -2347,88 +2475,371 @@ end
 hold(handles.ax1,'off')
 
 
-function plot_spatial_components(handles, idx)
+function plot_spatial_components(handles, idx, highlight)
 % plot background (Cn or Mn) and spatial components in ax2
+%
+% - idx of length 1: a single ROI (e.g. del-list browsing, or a
+%   click-selected ROI passed in via the optional 3rd arg 'highlight')
+% - idx of length 2: a merge pair
+% - idx spanning (almost) all ROIs with no highlight: the "Plot all
+%   ROIs" button - a one-off, brightly colored view of every ROI
+%
+% every case except "Plot all ROIs" shares one persistent dim-green
+% background contour for every ROI (built once and reused - see
+% ensure_roi_background), with only the current view's ROI(s) recolored
+% bright on top (see apply_roi_view). Nothing gets redrawn or
+% recomputed just to switch which ROI(s) are being viewed, which is what
+% used to make clicking/browsing slow with many ROIs.
 
-%///////////////////////////////////// PLOT BACKGROUND
-% get figure
-axes(handles.ax2);
+if nargin < 3
+    highlight = [];
+end
 
-% get c axis scale
+if isempty(highlight) && length(idx) > 2
+    % "Plot all ROIs" button: bypass the persistent dim background
+    % entirely for a one-off, colorful view of everything
+    plot_all_rois_rainbow(handles, idx);
+    return
+end
+
+if ~isempty(highlight)
+    idx = highlight; % click-selecting one ROI looks exactly like viewing it alone
+end
+
+ensure_roi_background(handles);
+apply_roi_view(handles, idx);
+
+% remove labels
+set(handles.ax2, 'XTick', [], 'YTick', []);
+
+% make everything in ax2 transparent to mouse clicks: by default these
+% objects have HitTest='on', so a click lands on them (not the axes) and
+% is silently swallowed since they have no ButtonDownFcn of their own -
+% this is why ax2's ButtonDownFcn would never fire otherwise
+set(allchild(handles.ax2), 'HitTest', 'off', 'PickableParts', 'none');
+
+% re-apply click-to-select every time: a fresh background redraw resets
+% axes properties, which would otherwise silently wipe out the
+% ButtonDownFcn and the disabled default interactivity set up in
+% start_gui_Callback
+disableDefaultInteractivity(handles.ax2);
+set(handles.ax2, 'ButtonDownFcn', {@ax2_ButtonDownFcn, handles.figure1});
+
+
+function [data, clim_vals] = compute_background_image_data(handles)
+% compute the Cn/Mn image data and color axis limits to display, based
+% on the current display settings (cn/mn toggle, flip, scale). Shared by
+% draw_background_image (fresh draw) and ensure_roi_background (in-place
+% update), so scale/Cn-Mn/flip changes never require redrawing anything
+% else in ax2 - see ensure_roi_background.
+
 c_lim_reduction =  str2num(get(handles.scale_cn,'String'));
-
-% get what to plot (Cn or Mn) and plot
 plot_cn_mn = get(handles.cn_mn_plot,'Value');
 
-% plot figure
 if plot_cn_mn == 1 % plot Cn
-    % check if we need to flip the background
     flip_bg = get(handles.flip_bg, 'Value'); % 0=no flip, 1=flip
     if flip_bg == 0
-        imagesc(fliplr(rot90(handles.rawdata1.results.Cn, -1)))
+        data = fliplr(rot90(handles.rawdata1.results.Cn, -1));
     else
-        imagesc(handles.rawdata1.results.Cn)
+        data = handles.rawdata1.results.Cn;
     end
     tmp_max = ( min(min(handles.rawdata1.results.Cn)) + ((max(max(handles.rawdata1.results.Cn)) - min(min(handles.rawdata1.results.Cn))) / c_lim_reduction) );
-    clim([ min(min(handles.rawdata1.results.Cn)) + ((tmp_max - min(min(handles.rawdata1.results.Cn))) / 2) tmp_max]);
+    clim_vals = [ min(min(handles.rawdata1.results.Cn)) + ((tmp_max - min(min(handles.rawdata1.results.Cn))) / 2) tmp_max];
 elseif plot_cn_mn == 2 % plot Mn
     if ~isfield(handles.rawdata1.results, 'Mn') % fall back to Cn if Mn unavailable
         set(handles.cn_mn_plot, 'Value', 1); % reset toggle to Cn
         set(handles.user_alert, 'String', 'Mn not available, showing Cn');
-        % plot Cn instead
         flip_bg = get(handles.flip_bg, 'Value');
         if flip_bg == 0
-            imagesc(fliplr(rot90(handles.rawdata1.results.Cn, -1)))
+            data = fliplr(rot90(handles.rawdata1.results.Cn, -1));
         else
-            imagesc(handles.rawdata1.results.Cn)
+            data = handles.rawdata1.results.Cn;
         end
         tmp_max = ( min(min(handles.rawdata1.results.Cn)) + ((max(max(handles.rawdata1.results.Cn)) - min(min(handles.rawdata1.results.Cn))) / c_lim_reduction) );
-        clim([ min(min(handles.rawdata1.results.Cn)) + ((tmp_max - min(min(handles.rawdata1.results.Cn))) / 2) tmp_max]);
+        clim_vals = [ min(min(handles.rawdata1.results.Cn)) + ((tmp_max - min(min(handles.rawdata1.results.Cn))) / 2) tmp_max];
     else
-        % check if we need to flip the background
         flip_bg = get(handles.flip_bg, 'Value');
         if flip_bg == 0
-            imagesc(fliplr(rot90(handles.rawdata1.results.Mn, -1)))
+            data = fliplr(rot90(handles.rawdata1.results.Mn, -1));
         else
-            imagesc(handles.rawdata1.results.Mn)
+            data = handles.rawdata1.results.Mn;
         end
-        clim([min(min(handles.rawdata1.results.Mn)) ...
-            ( min(min(handles.rawdata1.results.Mn)) + ((max(max(handles.rawdata1.results.Mn)) - min(min(handles.rawdata1.results.Mn))) / c_lim_reduction) )]);
+        clim_vals = [min(min(handles.rawdata1.results.Mn)) ...
+            ( min(min(handles.rawdata1.results.Mn)) + ((max(max(handles.rawdata1.results.Mn)) - min(min(handles.rawdata1.results.Mn))) / c_lim_reduction) )];
     end
 end
 
-% change colormap
+
+function img_handle = draw_background_image(handles)
+% draw the Cn/Mn background image fresh into ax2 (currently-selected
+% axes) and return its handle; used when there's nothing to update in
+% place (no cache yet) and by plot_all_rois_rainbow (which always fully
+% redraws anyway)
+
+[data, clim_vals] = compute_background_image_data(handles);
+img_handle = imagesc(data);
+clim(clim_vals);
 colormap gray;
 
-%///////////////////////////////////// PLOT ROIs
-% get figure
-hold(handles.ax2,'on')
 
-% plot per ROI
-for k = 1:length(idx)
-    % extract the spatial component and reshape it
-%     roiSpatial = full(handles.updatedA(:, idx(k))); % convert sparse column to full
-%     roiImage = reshape(roiSpatial, handles.rawdata1.results.options.d1, handles.rawdata1.results.options.d2); % reshape to 2D
-    roiImage = squeeze(handles.Afull(idx(k),:,:));
+function key = roi_image_key(handles)
+% settings that affect only the background image - changing these can
+% be handled with an in-place CData/CLim update, no redraw needed
+key = struct( ...
+    'cn_mn', get(handles.cn_mn_plot,'Value'), ...
+    'flip_bg', get(handles.flip_bg,'Value'), ...
+    'scale_cn', str2num(get(handles.scale_cn,'String')));
 
-    % plot contour
-    % [~, h] = contour(roiImage, [str2num(get(handles.contour_thres,'String')) str2num(get(handles.contour_thres,'String'))], 'LineWidth', 1.5); % adjust threshold as needed
-    tmp_thres = min(min(roiImage)) + ((max(max(roiImage)) - min(min(roiImage))) * (1 - str2num(get(handles.contour_thres,'String'))) ); % contour_thres is fraction of entire ROI
 
-    % identify 1 ROI, 2 ROIs, or anything else (multi-merge)
-    if length(idx) == 1 % one ROI = del list
-        contour(roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', handles.colors(1,:)); % adjust threshold as needed
-    elseif length(idx) == 2 % two ROIs = merge list
-        contour(roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', handles.colors(k+1,:)); % adjust threshold as needed
-    else % multi-merge
-        cmap = parula(length(idx));
-        contour(roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', cmap(k,:)); % adjust threshold as needed
+function key = roi_contour_key(handles)
+% settings that affect the ROI contours - changing these requires
+% deleting and rebuilding the contour objects (but not the image)
+key = struct( ...
+    'n_rois', size(handles.Afull,1), ...
+    'thres', str2num(get(handles.contour_thres,'String')));
+
+
+function contour_handles = build_all_roi_contours(handles, contour_key)
+
+% draw one dim green contour per ROI (assumes hold(ax2,'on') already set)
+n_rois = contour_key.n_rois;
+contour_handles = gobjects(1, n_rois);
+
+for k = 1:n_rois
+    roiImage = squeeze(handles.Afull(k,:,:));
+    tmp_thres = min(roiImage(:)) + ((max(roiImage(:)) - min(roiImage(:))) * (1 - contour_key.thres));
+    [~, h] = contour(roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', handles.colors(4,:), 'EdgeAlpha', 0.5);
+    contour_handles(k) = h;
+end
+
+
+function ensure_roi_background(handles)
+% draw the background image and a dim green contour for every ROI once,
+% caching them in ax2's appdata so single-ROI, merge-pair, and
+% click-select views can all reuse them (see apply_roi_view) instead of
+% redrawing everything on every view change. Image-only settings (Cn/Mn
+% toggle, flip, scale) update the existing image's CData/CLim in place
+% without touching the contours at all; ROI-count/threshold changes only
+% rebuild the contours, leaving the image alone. Everything is only
+% drawn from scratch when there's no usable cache yet (e.g. right after
+% "Plot all ROIs", which wipes the axes).
+
+img_key = roi_image_key(handles);
+contour_key = roi_contour_key(handles);
+cache = getappdata(handles.ax2, 'roi_bg_cache');
+
+if isempty(cache) || ~isgraphics(cache.img_handle)
+    % nothing usable to update in place - draw everything from scratch
+    axes(handles.ax2);
+    img_handle = draw_background_image(handles);
+    hold(handles.ax2, 'on');
+    contour_handles = build_all_roi_contours(handles, contour_key);
+    hold(handles.ax2, 'off');
+    active = [];
+else
+    img_handle = cache.img_handle;
+    contour_handles = cache.contour_handles;
+    active = cache.active;
+
+    if ~isequal(cache.img_key, img_key)
+        % only the image needs updating - set CData/CLim in place; this
+        % does NOT clear the axes, so the contour objects on top are
+        % left completely untouched
+        [data, clim_vals] = compute_background_image_data(handles);
+        set(img_handle, 'CData', data);
+        clim(handles.ax2, clim_vals);
+    end
+
+    if ~isequal(cache.contour_key, contour_key) || ~all(isgraphics(contour_handles))
+        % ROI count or contour threshold changed - delete and rebuild
+        % just the contours; the background image is left alone
+        delete(contour_handles(isgraphics(contour_handles)));
+        hold(handles.ax2, 'on');
+        contour_handles = build_all_roi_contours(handles, contour_key);
+        hold(handles.ax2, 'off');
+        active = []; % the old highlight doesn't apply to the new objects
     end
 end
 
-% remove labels
+setappdata(handles.ax2, 'roi_bg_cache', struct( ...
+    'img_handle', img_handle, 'img_key', img_key, ...
+    'contour_handles', {contour_handles}, 'contour_key', contour_key, ...
+    'active', active));
+
+
+function apply_roi_view(handles, idx)
+% recolor the persistent background contours (see ensure_roi_background)
+% so idx's ROI(s) are shown bright and everything else stays dimmed.
+% Never redraws or recomputes a contour - just restyles existing
+% objects - so switching views is instant regardless of ROI count.
+
+cache = getappdata(handles.ax2, 'roi_bg_cache');
+
+% dim whatever was previously the active view
+for k = 1:numel(cache.active)
+    roi = cache.active(k);
+    if roi >= 1 && roi <= numel(cache.contour_handles) && isgraphics(cache.contour_handles(roi))
+        set(cache.contour_handles(roi), 'LineWidth', 1.5, 'LineColor', handles.colors(4,:), 'EdgeAlpha', 0.5);
+    end
+end
+
+% brighten the current view's ROI(s)
+if length(idx) == 1 % single ROI (del-list view or click-selected)
+    set(cache.contour_handles(idx(1)), 'LineWidth', 3, 'LineColor', handles.colors(1,:), 'EdgeAlpha', 1);
+elseif length(idx) == 2 % merge pair
+    for k = 1:2
+        set(cache.contour_handles(idx(k)), 'LineWidth', 1.5, 'LineColor', handles.colors(k+1,:), 'EdgeAlpha', 1);
+    end
+end
+
+cache.active = idx;
+setappdata(handles.ax2, 'roi_bg_cache', cache);
+
+
+function plot_all_rois_rainbow(handles, idx)
+% "Plot all ROIs" button: a one-off, brightly colored view of every ROI
+% at once (parula colormap per ROI), independent of the persistent dim
+% background used everywhere else (see ensure_roi_background)
+
+axes(handles.ax2);
+draw_background_image(handles);
+hold(handles.ax2, 'on');
+
+cmap = parula(length(idx));
+for k = 1:length(idx)
+    roiImage = squeeze(handles.Afull(idx(k),:,:));
+    tmp_thres = min(min(roiImage)) + ((max(max(roiImage)) - min(min(roiImage))) * (1 - str2num(get(handles.contour_thres,'String'))) );
+    contour(roiImage, [tmp_thres tmp_thres], 'LineWidth', 1.5, 'LineColor', cmap(k,:));
+end
+hold(handles.ax2, 'off');
+
+% this redraw just destroyed whatever was cached - invalidate it so the
+% next normal view (single ROI / pair / click-select) rebuilds the dim
+% background fresh instead of reusing now-deleted graphics handles
+setappdata(handles.ax2, 'roi_bg_cache', []);
+
 set(handles.ax2, 'XTick', [], 'YTick', []);
-hold(handles.ax2,'off')
+set(allchild(handles.ax2), 'HitTest', 'off', 'PickableParts', 'none');
+disableDefaultInteractivity(handles.ax2);
+set(handles.ax2, 'ButtonDownFcn', {@ax2_ButtonDownFcn, handles.figure1});
+
+
+function ax2_ButtonDownFcn(hObject, eventdata, guiFig)
+% fires when the user clicks anywhere in ax2 (background/contour axes)
+% selects the ROI under the click, highlights it among all contours,
+% shows its trace in ax1, and updates the ROI info text (roi_idx/SNR/size)
+
+handles = guidata(guiFig);
+
+% ignore clicks before data has been loaded/started
+if ~isfield(handles, 'Afull') || isempty(handles.Afull)
+    return
+end
+
+% update user
+set(handles.user_alert, 'String', sprintf('Loading selected ROI...'));
+pause(0.1);
+
+% click location in the same pixel coordinates as handles.Afull
+pt = get(handles.ax2, 'CurrentPoint');
+col = round(pt(1,1));
+row = round(pt(1,2));
+
+% (re)build the pixel->ROI lookup map if it's missing or stale (i.e. the
+% contour threshold changed since it was built). This used to be redone
+% from scratch on every single click - looping over every ROI and
+% rescanning the whole image just to test one pixel - which is what made
+% clicking slow with many ROIs. Now it's cached and only rebuilt when
+% the threshold that defines the ROI outlines actually changes.
+contour_frac = str2num(get(handles.contour_thres,'String'));
+if ~isfield(handles, 'roi_label_map') || ~isfield(handles, 'roi_label_map_thres') || handles.roi_label_map_thres ~= contour_frac
+    handles = build_roi_lookup(handles, contour_frac);
+    guidata(guiFig, handles);
+end
+
+% find which ROI (if any) was clicked
+roi = find_roi_at_point(handles, row, col);
+if isempty(roi)
+    return % click missed every ROI
+end
+
+% store as the "active" ROI - same field the delete-list flow uses, so
+% add2dellist_Callback etc. work on it unchanged
+handles.plot_roi = roi;
+handles.to_plot = 1;
+
+% highlight this ROI against the persistent dim background - just
+% re-colors two contour objects (see apply_roi_view), no redraw at all
+plot_spatial_components(handles, roi)
+
+% show its trace and update the ROI info text
+plot_temporal_traces(handles, roi)
+plot_roi_info(handles, roi)
+
+% keep the delete-list slider in sync
+set(handles.slidertoaddtodellist, 'Value', roi)
+
+% update user
+set(handles.user_alert, 'String', sprintf('Manually selected ROI: %d', roi));
+pause(0.1);
+
+% store data
+guidata(guiFig, handles)
+
+
+function handles = build_roi_lookup(handles, contour_frac)
+% precompute, once, a pixel->ROI lookup map (which ROI, if any, "owns"
+% each pixel at the current contour threshold) so find_roi_at_point can
+% do an O(1) lookup instead of looping over every ROI and rescanning the
+% whole image on every click. Rebuilt only when contour_frac changes.
+
+n_rois = size(handles.Afull, 1);
+d1 = size(handles.Afull, 2);
+d2 = size(handles.Afull, 3);
+
+label_map = zeros(d1, d2);   % 0 = no ROI claims this pixel
+size_map = inf(d1, d2);      % size (in pixels) of the ROI currently claiming it
+
+for k = 1:n_rois
+    roiImage = squeeze(handles.Afull(k,:,:));
+    tmp_thres = min(roiImage(:)) + ((max(roiImage(:)) - min(roiImage(:))) * (1 - contour_frac));
+    mask = roiImage >= tmp_thres;
+    % overlapping ROIs: keep the smallest (most specific), same
+    % tie-break as the old per-click loop
+    claim = mask & (handles.pixels_A(k) < size_map);
+    label_map(claim) = k;
+    size_map(claim) = handles.pixels_A(k);
+end
+
+handles.roi_label_map = label_map;
+handles.roi_label_map_thres = contour_frac;
+
+
+function roi_idx = find_roi_at_point(handles, row, col)
+% find which ROI mask covers pixel (row,col) using the precomputed
+% roi_label_map (see build_roi_lookup); falls back to the nearest ROI
+% centroid (handles.Cent_N) if the click is a near miss; returns empty
+% if nothing is close enough
+
+roi_idx = [];
+d1 = size(handles.roi_label_map, 1);
+d2 = size(handles.roi_label_map, 2);
+
+if row < 1 || row > d1 || col < 1 || col > d2
+    return % click was outside the image entirely
+end
+
+hit = handles.roi_label_map(row, col);
+if hit > 0
+    roi_idx = hit;
+elseif isfield(handles, 'Cent_N') && ~isempty(handles.Cent_N)
+    % no direct hit: fall back to nearest centroid within a small radius
+    dists = sqrt((handles.Cent_N(:,1) - row).^2 + (handles.Cent_N(:,2) - col).^2);
+    [mind, tmp] = min(dists);
+    if mind <= 15 % pixels
+        roi_idx = tmp;
+    end
+end
 
 
 function plot_roi_info(handles, idx)
@@ -2461,9 +2872,23 @@ else % more ROIs
     set(handles.cell_pair_dist, 'String', sprintf('%.1f', handles.dist_mat(idx(1), idx(2))));
     set(handles.cell_pair_corr, 'String', sprintf('%.1f', handles.corr_mat(idx(1), idx(2))));
 
-    % plot distance vs crosscorr: current pair
-    plot(handles.distcorr, handles.dist_mat(idx(1), idx(2)), handles.corr_mat(idx(1), idx(2)), '.', 'Color', handles.color_plots(2,:), 'LineStyle', 'none', 'MarkerSize', 20)
-    hold(handles.distcorr,'off')
+    % plot distance vs crosscorr: current pair. Re-use a single marker
+    % handle (stashed in the axes' appdata) instead of calling plot()
+    % again each time - a fresh plot() call with hold left 'off' would
+    % wipe the full background scatter instead of just moving the dot
+    pair_marker = getappdata(handles.distcorr, 'pair_marker');
+    if isempty(pair_marker) || ~isvalid(pair_marker)
+        hold(handles.distcorr, 'on');
+        pair_marker = plot(handles.distcorr, handles.dist_mat(idx(1), idx(2)), handles.corr_mat(idx(1), idx(2)), '.', 'Color', handles.color_plots(2,:), 'LineStyle', 'none', 'MarkerSize', 20);
+        setappdata(handles.distcorr, 'pair_marker', pair_marker);
+    else
+        set(pair_marker, 'XData', handles.dist_mat(idx(1), idx(2)), 'YData', handles.corr_mat(idx(1), idx(2)));
+    end
+    % this marker is created before the full scatter (start_gui_Callback
+    % calls plot_roi_info before it draws the scatter), so by default it
+    % sits underneath every scatter dot added afterward and stays there -
+    % force it back to the top of the stack every time so it's visible
+    uistack(pair_marker, 'top');
 end
 
 
