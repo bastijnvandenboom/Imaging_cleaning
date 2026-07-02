@@ -57,11 +57,12 @@ Workflow: change settings, load file, start gui, work on either delete or merge 
 
 Make sure there are no repeated ROIs in the merge list before merging. Find them by Find repeats and manually delete them from the merge list, or press Run multi-merge a few times until there are not repeats anymore.
 
+
 GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
-FIGURE 1 - overview of the GUI
+FIGURE 1 - GUI while working on deleting ROIs
 ![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/20eb56b405b229eb8b65bf1002d0993ffc0e308a/GUI_example_delete.png)
 
-FIGURE 2 - Use mouse to select an ROI
+FIGURE 2 - GUI while merging ROI pairs
 
 ![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/13bad1eb29a939805d213285a6c6047e581dd70a/GUI_example_merge.png)
