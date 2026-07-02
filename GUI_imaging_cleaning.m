@@ -10,15 +10,15 @@
 % due to it's underlying structure, you need to delete or merge (not both
 % at the same time)
 
-% you can perform a delete after a merge and the otherway around, except
+% you can perform a delete after a merge and the other way around, except
 % that merge pairs will not be redetected -> reload data to do so
 
 % in practice, you might have multiple rounds of deleting and merging
 % (run GUI, save data, restart GUI, reload those data, and continue)
 
 % based on miniscope GUI (Aishwarya Parthasarathy and Bastijn van den Boom
-% at Willuhn lab, NIN)
-% 2026 Bastijn van den Boom (Sabatini lab, HMS)
+% at Willuhn lab, NIN, Amsterdam)
+% 2026 Bastijn van den Boom (Sabatini lab, HMS, Boston)
 
 
 function varargout = GUI_imaging_cleaning(varargin)
