@@ -64,4 +64,4 @@ FIGURE 1 - overview of the GUI
 
 FIGURE 2 - Use mouse to select an ROI
 
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/5b715442cc151e10e633421d4c515f25ddf1d454/GUI_example.png)
+![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/13bad1eb29a939805d213285a6c6047e581dd70a/GUI_example_merge.png)
