@@ -1,5 +1,5 @@
-# Imaging_cleaning
-Matlab GUI to clean calcium imaging dataset of 1 and 2 photon imaging experiments.
+# GUI to clean (calcium) imaging data
+Matlab GUI to clean (calcium) imaging dataset of 1 and 2 photon imaging experiments, and cells, axons, and dendrites.
 
 It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files. GUI allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
