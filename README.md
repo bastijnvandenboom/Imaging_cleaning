@@ -3,13 +3,16 @@ Matlab GUI to clean calcium imaging dataset of 1 and 2 photon imaging experiment
 
 It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files. GUI allows the user to manually curate data. After deleting, merging, or both, it saves data as a .mat file for future analyses.
 
-You load a raw session and use the GUI to either delete ROIs or merge ROIs (figure 1). You can include the "bad" ROIs (as defined by the ROI extraction software you used) and you can use multi-merge (merge more than 2 ROIs). Instead of going through all the ROIs, you can click on the spatial overview screen on an ROI which will be visualized (spatially and temporally) and can be deleted (figure 2).
+You load a raw session and use the GUI to either delete ROIs (figure 1) or merge ROIs (figure 2). You can include the "bad" ROIs (as defined by the ROI extraction software you used, which are automatically moved to the delete list for easy deleting) and you can use multi-merge (merge more than 2 ROIs simultaneously). Instead of going through all the ROIs, you can click on the spatial overview screen on an ROI which will be visualized (spatially and temporally) and can be deleted and selected to merge with another ROI. As dataset contain more and more ROIs our advice is cleaning data in short rounds (1 or 2 rounds of deleting ROIs, few rounds of merging, final check).
 
-GUI requires to first load data, then start GUI, then either delete or merge data (depending on which list you are filling). Button appear when you can move along.
+GUI requires to first load data, then start GUI, then either delete or merge data (depending on which list you are filling). Button appear when you can use it.
+
+
+# how to use it
 
 Clone/download the code, add to your Matlab path, and run GUI_imaging_cleaning.
 
-Start by changing settings:
+Change settings (Selection and Merge) before loading data:
 
 Selection: allows to filter ROIs
 - Spat min: minimum number of pixels (spatial) to include an ROI (0=include all)
@@ -20,6 +23,8 @@ Selection: allows to filter ROIs
 Merge: filters to identify merge pairs (merge pairs will be in Merge panel)
 - Dist thr: find ROIs within this distance (number of pixels)
 - Correl thr: minimum correlation between ROIs
+
+The plotting variables can be changed while using the GUI:
 
 Plotting: allows to change visulization while running the GUI
 - Cont thr: threshold for the fraction of pixels to include to plot contours or ROIs
@@ -32,7 +37,7 @@ Plotting: allows to change visulization while running the GUI
 
 Start GUI
 - Load File: manual select file (.hdf5 or .mat)
-- START GUI: start GUI
+- Start GUI: start GUI
 - restart GUI: restart the GUI (either do all deletes or all merges, then save data, then restart GUI)
 
 Save data
@@ -44,7 +49,7 @@ While visualizing single ROIs in the Delete panel, the Single ROI info will upda
 
 While visualizing ROI pairs in the Merge panel, Merge pair info will update.
 
-Delete panel: allows for single ROI visualization, and adding and removing from delete list. Hit Delete (red button) to actually delete ROIs that are in the delete list.
+Delete panel: allows for single ROI visualization, and adding and removing from delete list. Hit Delete (red button) to actually delete all ROIs that are in the delete list.
 
 Merge panel: go through ROI pairs that are identified by the distance and correlation threshold settings. Use Add pair to add to the merge list. Use the dropdown buttons to manually select 2 ROIs and press Manual add to add to the merge list. Use Find repeats to identify ROIs that occur more than once in the merge list. Use Run multi-merge to automatically find ideal merge pairs. Rerun multi-merge if ROIs are still repeated. Hit Merge (red button) to actually merge ROIs that are in the merge list. 
 
@@ -55,7 +60,7 @@ Make sure there are no repeated ROIs in the merge list before merging. Find them
 GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
 FIGURE 1 - overview of the GUI
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/5b715442cc151e10e633421d4c515f25ddf1d454/GUI_example.png)
+![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/20eb56b405b229eb8b65bf1002d0993ffc0e308a/GUI_example_delete.png)
 
 FIGURE 2 - Use mouse to select an ROI
 
