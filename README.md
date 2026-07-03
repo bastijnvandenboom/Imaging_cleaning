@@ -1,4 +1,4 @@
-% PRISM: Post-processing ROI Inspection, Sorting, & Merging
+# PRISM: Post-processing ROI Inspection, Sorting, & Merging
 
 Matlab GUI to clean (calcium) imaging datasets of 1- and 2-photon imaging experiments, and cells, axons, and dendrites.
 
