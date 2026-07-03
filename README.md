@@ -61,8 +61,8 @@ Make sure there are no repeated ROIs in the merge list before merging. Find them
 
 GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
-FIGURE 1 - GUI while working on deleting ROIs
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/20eb56b405b229eb8b65bf1002d0993ffc0e308a/GUI_example_delete.png)
+FIGURE 1 - PRISM used to delete ROIs
+![screenshot_GUI](https://github.com/bastijnvandenboom/PRISM/blob/5422240b65a40e25e658a92837cbdb903b1297b0/PRISM_delete.png)
 
 FIGURE 2 - GUI while merging ROI pairs
 
