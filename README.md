@@ -67,5 +67,4 @@ FIGURE 1 - PRISM used to delete ROIs
 ![PRISM_delete](https://github.com/bastijnvandenboom/PRISM/blob/5422240b65a40e25e658a92837cbdb903b1297b0/PRISM_delete.png)
 
 FIGURE 2 - PRISM used to merge ROI pairs (notice how 3 ROIs will be merged into 1)
-
 ![PRISM_merge](https://github.com/bastijnvandenboom/PRISM/blob/7ecf3339892702e255d7b8fae4dc533501c4fdd3/PRISM_merge.png)
