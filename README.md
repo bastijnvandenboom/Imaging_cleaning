@@ -64,6 +64,6 @@ GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a)
 FIGURE 1 - PRISM used to delete ROIs
 ![screenshot_GUI](https://github.com/bastijnvandenboom/PRISM/blob/5422240b65a40e25e658a92837cbdb903b1297b0/PRISM_delete.png)
 
-FIGURE 2 - GUI while merging ROI pairs
+FIGURE 2 - PRISM used to merge ROI pairs (notice how 3 ROIs will be merged into 1)
 
-![screenshot_GUI](https://github.com/bastijnvandenboom/Imaging_cleaning/blob/13bad1eb29a939805d213285a6c6047e581dd70a/GUI_example_merge.png)
+![screenshot_GUI](https://github.com/bastijnvandenboom/PRISM/blob/7ecf3339892702e255d7b8fae4dc533501c4fdd3/PRISM_merge.png)
