@@ -1,4 +1,4 @@
-![screenshot_GUI](https://github.com/bastijnvandenboom/PRISM/blob/9dc8876b5fd304e34d7032912d923f0ebad734a6/PRISM_logo.png)
+![PRISM_logo](https://github.com/bastijnvandenboom/PRISM/blob/9dc8876b5fd304e34d7032912d923f0ebad734a6/PRISM_logo.png)
 
 # PRISM: Post-processing ROI Inspection, Sorting, & Merging
 
@@ -64,8 +64,8 @@ Make sure there are no repeated ROIs in the merge list before merging. Find them
 GUI made with Matlab GUIDE but can be run with the latest Matlab version (2026a).
 
 FIGURE 1 - PRISM used to delete ROIs
-![screenshot_GUI](https://github.com/bastijnvandenboom/PRISM/blob/5422240b65a40e25e658a92837cbdb903b1297b0/PRISM_delete.png)
+![PRISM_delete](https://github.com/bastijnvandenboom/PRISM/blob/5422240b65a40e25e658a92837cbdb903b1297b0/PRISM_delete.png)
 
 FIGURE 2 - PRISM used to merge ROI pairs (notice how 3 ROIs will be merged into 1)
 
-![screenshot_GUI](https://github.com/bastijnvandenboom/PRISM/blob/7ecf3339892702e255d7b8fae4dc533501c4fdd3/PRISM_merge.png)
+![PRISM_merge](https://github.com/bastijnvandenboom/PRISM/blob/7ecf3339892702e255d7b8fae4dc533501c4fdd3/PRISM_merge.png)
