@@ -13,7 +13,7 @@ GUI requires to first load data, then start GUI, then either delete or merge dat
 
 # how to use it
 
-Clone/download the code, add to your Matlab path, and run GUI_imaging_cleaning.
+Clone/download the code, add to your Matlab path, and run PRISM.
 
 Change settings (Selection and Merge) before loading data:
 
