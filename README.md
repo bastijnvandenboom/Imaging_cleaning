@@ -35,7 +35,7 @@ Plotting: allows to change visulization while running the GUI
 - Cn/Mn: plot correlation image (Cn) or maximum projection (Mn)
 - C_raw/C: plot DF/F (C_raw) or denoised signal (C)
 - Concat mark: plots repetitive black dotted lines on the temporal traces (useful to indicate recording duration or file size)
-- Flip bg: checked will flip the background (useful for old Matlab-based CNMF-e)
+- Flip bg: checked will flip the background (in case ROIs don't overlap with background)
 - Plot all contours: during GUI, checking this will plot contours of all ROIs
 
 Start GUI
