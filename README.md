@@ -8,7 +8,7 @@ It loads CNMF-E (.mat), CNMF (Caiman) (.mat or .hdf5), and Suite2P (.mat) files.
 
 You load a raw session and use the GUI to either delete ROIs (figure 1) or merge ROIs (figure 2). You can include the "bad" ROIs (as defined by the ROI extraction software you used, which are automatically moved to the delete list for easy deleting) and you can use multi-merge (merge more than 2 ROIs simultaneously). Instead of going through all the ROIs, you can click on the spatial overview screen on an ROI which will be visualized (spatially and temporally) and can be deleted and selected to merge with another ROI. As dataset contain more and more ROIs our advice is cleaning data in short rounds (1 or 2 rounds of deleting ROIs, few rounds of merging, final check).
 
-GUI requires to first load data, then start GUI, then either delete or merge data (depending on which list you are filling). Button appear when you can use it.
+GUI requires to first load data, start GUI, and finally either delete or merge data (depending on which list you are filling). Button appear when you can use it.
 
 
 # how to use it
